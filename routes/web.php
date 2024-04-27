@@ -62,6 +62,6 @@ Route::get( '__vite_ping', function () {
  */
 Route::get( '__dev__', [ DevController::class, 'index' ] );
 
-// Route::get('/', function () {
-//     return to_route('ns.login');
-// });
+Route::get('/', function () {
+    return to_route('ns.login');
+});
