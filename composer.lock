@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "25cb561022c8173ae846ba1f189bb467",
+    "content-hash": "8c4ab180fc494e078475e269eceea956",
     "packages": [
         {
             "name": "brianium/paratest",
@@ -1939,16 +1939,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v11.4.0",
+            "version": "v11.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "c1dc67c28811dc5be524a30b18f29ce62126716a"
+                "reference": "e3c24268f1404805e15099b9f035fe310cb30753"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/c1dc67c28811dc5be524a30b18f29ce62126716a",
-                "reference": "c1dc67c28811dc5be524a30b18f29ce62126716a",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/e3c24268f1404805e15099b9f035fe310cb30753",
+                "reference": "e3c24268f1404805e15099b9f035fe310cb30753",
                 "shasum": ""
             },
             "require": {
@@ -2140,20 +2140,20 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2024-04-16T14:38:51+00:00"
+            "time": "2024-04-23T15:11:31+00:00"
         },
         {
             "name": "laravel/prompts",
-            "version": "v0.1.19",
+            "version": "v0.1.20",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/prompts.git",
-                "reference": "0ab75ac3434d9f610c5691758a6146a3d1940c18"
+                "reference": "bf9a360c484976692de0f3792f30066f4f4b34a2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/prompts/zipball/0ab75ac3434d9f610c5691758a6146a3d1940c18",
-                "reference": "0ab75ac3434d9f610c5691758a6146a3d1940c18",
+                "url": "https://api.github.com/repos/laravel/prompts/zipball/bf9a360c484976692de0f3792f30066f4f4b34a2",
+                "reference": "bf9a360c484976692de0f3792f30066f4f4b34a2",
                 "shasum": ""
             },
             "require": {
@@ -2195,9 +2195,9 @@
             ],
             "support": {
                 "issues": "https://github.com/laravel/prompts/issues",
-                "source": "https://github.com/laravel/prompts/tree/v0.1.19"
+                "source": "https://github.com/laravel/prompts/tree/v0.1.20"
             },
-            "time": "2024-04-16T14:20:35+00:00"
+            "time": "2024-04-18T00:45:25+00:00"
         },
         {
             "name": "laravel/reverb",
@@ -3282,16 +3282,16 @@
         },
         {
             "name": "nesbot/carbon",
-            "version": "3.2.4",
+            "version": "3.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/briannesbitt/Carbon.git",
-                "reference": "82c28278c1c8f7b82dcdab25692237f052ffc8d8"
+                "reference": "7219739c4e01d4680c980545821733b6ed8ee880"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/82c28278c1c8f7b82dcdab25692237f052ffc8d8",
-                "reference": "82c28278c1c8f7b82dcdab25692237f052ffc8d8",
+                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/7219739c4e01d4680c980545821733b6ed8ee880",
+                "reference": "7219739c4e01d4680c980545821733b6ed8ee880",
                 "shasum": ""
             },
             "require": {
@@ -3384,7 +3384,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-04-05T09:58:10+00:00"
+            "time": "2024-04-18T16:35:06+00:00"
         },
         {
             "name": "nette/schema",
@@ -3679,71 +3679,6 @@
                 }
             ],
             "time": "2024-03-06T16:17:14+00:00"
-        },
-        {
-            "name": "opis/closure",
-            "version": "3.6.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/opis/closure.git",
-                "reference": "3d81e4309d2a927abbe66df935f4bb60082805ad"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/opis/closure/zipball/3d81e4309d2a927abbe66df935f4bb60082805ad",
-                "reference": "3d81e4309d2a927abbe66df935f4bb60082805ad",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^5.4 || ^7.0 || ^8.0"
-            },
-            "require-dev": {
-                "jeremeamia/superclosure": "^2.0",
-                "phpunit/phpunit": "^4.0 || ^5.0 || ^6.0 || ^7.0 || ^8.0 || ^9.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "3.6.x-dev"
-                }
-            },
-            "autoload": {
-                "files": [
-                    "functions.php"
-                ],
-                "psr-4": {
-                    "Opis\\Closure\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Marius Sarca",
-                    "email": "marius.sarca@gmail.com"
-                },
-                {
-                    "name": "Sorin Sarca",
-                    "email": "sarca_sorin@hotmail.com"
-                }
-            ],
-            "description": "A library that can be used to serialize closures (anonymous functions) and arbitrary objects.",
-            "homepage": "https://opis.io/closure",
-            "keywords": [
-                "anonymous functions",
-                "closure",
-                "function",
-                "serializable",
-                "serialization",
-                "serialize"
-            ],
-            "support": {
-                "issues": "https://github.com/opis/closure/issues",
-                "source": "https://github.com/opis/closure/tree/3.6.3"
-            },
-            "time": "2022-01-27T09:35:39+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -10057,21 +9992,21 @@
         },
         {
             "name": "tormjens/eventy",
-            "version": "0.8",
+            "version": "0.9.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tormjens/eventy.git",
-                "reference": "3af91bd1d98114d19aa8b4ff983f872bdcc55c44"
+                "reference": "b5327c71def04352ef1febf4797cef860f7e3789"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tormjens/eventy/zipball/3af91bd1d98114d19aa8b4ff983f872bdcc55c44",
-                "reference": "3af91bd1d98114d19aa8b4ff983f872bdcc55c44",
+                "url": "https://api.github.com/repos/tormjens/eventy/zipball/b5327c71def04352ef1febf4797cef860f7e3789",
+                "reference": "b5327c71def04352ef1febf4797cef860f7e3789",
                 "shasum": ""
             },
             "require": {
                 "illuminate/support": ">=5.3",
-                "opis/closure": "^3.5",
+                "laravel/serializable-closure": "^1.3",
                 "php": ">=7.0"
             },
             "require-dev": {
@@ -10121,9 +10056,9 @@
             ],
             "support": {
                 "issues": "https://github.com/tormjens/eventy/issues",
-                "source": "https://github.com/tormjens/eventy/tree/0.8"
+                "source": "https://github.com/tormjens/eventy/tree/0.9.3"
             },
-            "time": "2021-10-22T08:33:10+00:00"
+            "time": "2023-08-29T08:43:45+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
