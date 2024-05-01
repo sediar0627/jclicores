@@ -17,7 +17,6 @@
                 <div class="flex justify-between items-center">
                     <label for="title" class="font-bold my-2 text-primary">{{ form.main.label }}</label>
                     <div for="title" class="text-sm my-2 text-primary">
-                        <a href="/dashboard/products/create" class="rounded-full border ns-inset-button error hover:bg-error-tertiary  px-2 py-1">{{ __( 'Create new record' ) }}</a>
                         <a v-if="returnUrl" :href="returnUrl" class="rounded-full border ns-inset-button error hover:bg-error-tertiary  px-2 py-1">{{ __( 'Return' ) }}</a>
                     </div>
                 </div>
