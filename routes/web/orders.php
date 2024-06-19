@@ -10,6 +10,7 @@ Route::get( '/orders/payments-types/create', [ OrdersController::class, 'createP
 Route::get( '/orders/payments-types/edit/{paymentType}', [ OrdersController::class, 'updatePaymentType' ] )->name( ns()->routeName( 'ns.dashboard.orders-update-types' ) );
 Route::get( '/orders/invoice/{order}', [ OrdersController::class, 'orderInvoice' ] )->name( ns()->routeName( 'ns.dashboard.orders-invoice' ) );
 Route::get( '/orders/receipt/{order}', [ OrdersController::class, 'orderReceipt' ] )->name( ns()->routeName( 'ns.dashboard.orders-receipt' ) );
+Route::get( '/orders/pos/{order}', [ OrdersController::class, 'orderPos' ] )->name( ns()->routeName( 'ns.dashboard.orders-pos' ) );
 Route::get( '/orders/refund-receipt/{refund}', [ OrdersController::class, 'orderRefundReceipt' ] )->name( ns()->routeName( 'ns.dashboard.orders-refund-receipt' ) );
 Route::get( '/orders/payment-receipt/{orderPayment}', [ OrdersController::class, 'getOrderPaymentReceipt' ] )->name( ns()->routeName( 'ns.dashboard.orders-payment-receipt' ) );
 Route::get( '/pos', [ OrdersController::class, 'showPOS' ] )->name( ns()->routeName( 'ns.dashboard.pos' ) );

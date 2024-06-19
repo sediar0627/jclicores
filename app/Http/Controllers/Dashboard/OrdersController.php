@@ -24,11 +24,15 @@ use App\Models\OrderInstalment;
 use App\Models\OrderPayment;
 use App\Models\OrderRefund;
 use App\Models\PaymentType;
+use App\Print\OrderItemPrint;
 use App\Services\DateService;
 use App\Services\Options;
 use App\Services\OrdersService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
+use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
+use Mike42\Escpos\Printer;
+use Illuminate\Support\Str;
 
 class OrdersController extends DashboardController
 {
@@ -258,6 +262,13 @@ class OrdersController extends DashboardController
         ] );
     }
 
+    public function mapPaymentTypes()
+    {
+        return collect( $this->paymentTypes )->mapWithKeys( function ( $payment ) {
+            return [ $payment[ 'identifier' ] => $payment[ 'label' ] ];
+        } );
+    }
+
     public function orderReceipt( Order $order )
     {
         $order->load( 'customer' );
@@ -271,10 +282,102 @@ class OrdersController extends DashboardController
             'title' => sprintf( __( 'Order Receipt &mdash; %s' ), $order->code ),
             'optionsService' => $this->optionsService,
             'ordersService' => $this->ordersService,
-            'paymentTypes' => collect( $this->paymentTypes )->mapWithKeys( function ( $payment ) {
-                return [ $payment[ 'identifier' ] => $payment[ 'label' ] ];
-            } ),
+            'paymentTypes' => $this->mapPaymentTypes(),
         ] );
+    }
+
+    public function orderPos( Order $order )
+    {
+        $paymentTypes = $this->mapPaymentTypes();
+
+        $nombreImpresora = "POS-58";
+        $connector = new WindowsPrintConnector($nombreImpresora);
+        $impresora = new Printer($connector);
+
+        $impresora->setJustification(Printer::JUSTIFY_LEFT);
+        $impresora->setFont(Printer::FONT_B);
+        $impresora->setTextSize(2, 1);
+
+        $impresora->text("JC Licores\n");
+
+        $impresora->setTextSize(1, 1);
+        $impresora->text("Andres Riascos                            \n");
+        $impresora->text("Nit. 1084450150                           \n");
+        $impresora->text("Calle 18 # 2 - 50                         \n");
+        $impresora->text("Telefono +57 3157594115                   \n");
+        $impresora->text("Regimen común                             \n");
+        
+        $impresora->feed(1);
+        
+        $impresora->text("Mesa: ".$order->title."\n");
+        $impresora->text("Id: #".$order->id."\n");
+        $impresora->text("Fecha: ".date('d/m/Y H:i:s')."\n");
+        $impresora->text("Mesero: ".$order->customer?->first_name."\n");
+
+        $impresora->text("------------------------------------------\n");
+        $impresora->text("PRODUCTO x CANTIDAD                  TOTAL\n");
+        $impresora->text("------------------------------------------\n");
+
+        $order->combinedProducts->each(function($product) use (&$impresora) {
+            (new OrderItemPrint(
+                $product->name,
+                $product->product_type == 'dynamic' ? $product->rate : $product->quantity,
+                $product->total_price,
+                $impresora,
+                $product->product_type == 'dynamic' ? false : true
+            ))->print();
+        });
+
+        $impresora->text("------------------------------------------\n");
+
+        $impresora->setTextSize(2, 1);
+
+        (new OrderItemPrint(
+            'SUBTOTAL',
+            -1,
+            $order->total,
+            $impresora
+        ))->print(21);
+
+        if( $order->payment_status == Order::PAYMENT_PAID || $order->payment_status == Order::PAYMENT_PARTIALLY ){
+            $impresora->setTextSize(1, 1);
+
+            $impresora->text("------------------------------------------\n");
+
+            $impresora->setTextSize(2, 1);
+
+            (new OrderItemPrint(
+                $order->payment_status == Order::PAYMENT_PAID ? 'CAMBIO' : 'PENDIENTE',
+                -1,
+                abs( $order->change ),
+                $impresora
+            ))->print(21);
+        }
+
+        $impresora->setTextSize(1, 1);
+
+        $payments = $order->payments;
+
+        if($payments->count() > 0){
+            $impresora->text("------------------------------------------\n");
+            $impresora->text("TIPO DE PAGO                         VALOR\n");
+            $impresora->text("------------------------------------------\n");
+        }
+
+        foreach ( $payments as $payment ) {
+            (new OrderItemPrint(
+                $paymentTypes[ $payment[ 'identifier' ] ] ?? __( 'Pago' ),
+                -1,
+                $payment[ 'value' ],
+                $impresora
+            ))->print();
+        }
+
+        $impresora->feed(3);
+
+        $impresora->close();
+
+        return "<script>window.close();</script>";
     }
 
     public function voidOrder( Order $order, Request $request )

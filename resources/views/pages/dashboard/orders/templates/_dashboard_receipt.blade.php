@@ -13,6 +13,7 @@ use App\Classes\Hook;
             </div>
             <div class="my-2 w-full mx-auto">                
                 <ns-link type="info" href="{{ ns()->url( '/dashboard/orders/receipt/' . $order->id . '?dash-visibility=disabled' ) }}">{{ __( 'Hide Dashboard' ) }}</ns-link>
+                <ns-link type="info" target="_blank" href="{{ route('ns.dashboard.orders-pos', $order) }}">{{ __( 'Print' ) }}</ns-link>
                 @include( Hook::filter( 'ns-web-receipt-template', 'pages.dashboard.orders.templates._receipt' ) )
             </div>
         </div>
