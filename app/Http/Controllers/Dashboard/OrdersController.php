@@ -312,10 +312,13 @@ class OrdersController extends DashboardController
             $data[$order->payment_status == Order::PAYMENT_PAID ? 'cambio' : 'pendiente'] = abs( $order->change );
         }
 
+        $paymentTypes = $this->mapPaymentTypes();
+
         $payments = $order->payments;
 
         foreach ( $payments as $key => $payment ) {
-            $data['pago_'.($payment['identifier'] ?? $key)] = intval($payment['value']);
+            $identificador = ($payment['identifier'] ?? $key);
+            $data['pago_'.$paymentTypes[$identificador]] = intval($payment['value']);
         }
 
         $query = http_build_query($data);
