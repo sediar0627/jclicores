@@ -1,6 +1,7 @@
 <?php
 
 use App\Events\BeforeStartWebRouteEvent;
+use App\Http\Controllers\Dashboard\OrdersController;
 use App\Http\Controllers\DevController;
 use Illuminate\Support\Facades\Route;
 
@@ -65,3 +66,6 @@ Route::get( '__dev__', [ DevController::class, 'index' ] );
 Route::get('/', function () {
     return to_route('ns.login');
 });
+
+Route::get( '/impresion/pos/{order}/construir_query', [ OrdersController::class, 'construirConsultaPos' ] )->name( 'imprimir.construir_query' );
+Route::get( '/impresion/pos', [ OrdersController::class, 'imprimirPos' ] )->name( 'imprimir.pos' );

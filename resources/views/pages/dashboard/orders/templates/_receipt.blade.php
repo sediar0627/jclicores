@@ -158,7 +158,7 @@ use Illuminate\Support\Facades\View;
 
 @if (request()->query( 'autoprint' ))
 <script>
-    window.open('{{ route("ns.dashboard.orders-pos", $order) }}', '_blank').focus();
+    window.open("{{ route('imprimir.construir_query', $order) }}", '_blank').focus();
 </script>
 @endif
 {{-- @includeWhen( request()->query( 'autoprint' ) === 'true', ['/pages/dashboard/orders/templates/_autoprint', compact($order) ]) --}}

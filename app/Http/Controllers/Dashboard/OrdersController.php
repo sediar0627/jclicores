@@ -29,6 +29,7 @@ use App\Services\DateService;
 use App\Services\Options;
 use App\Services\OrdersService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\View;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 use Mike42\Escpos\Printer;
@@ -286,9 +287,80 @@ class OrdersController extends DashboardController
         ] );
     }
 
-    public function orderPos( Order $order )
+    public function construirConsultaPos( $order )
     {
+        $order = $this->ordersService->getOrder( $order );
+
+        $data = [
+            'mesa' => $order->title ?? 'N/A',
+            'id' => $order->id,
+            'fecha' => date('d/m/Y H:i:s'),
+            'mesero' => $order->customer?->first_name ?? 'N/A',
+            'subtotal' => $order->total,
+        ];
+
+        foreach ($order->combinedProducts as $key => $product) {
+            $data['producto_'.$key] = implode(',', [
+                $product->name,
+                $product->product_type != 'dynamic' ? $product->quantity : $product->rate,
+                intval($product->total_price),
+                $product->product_type != 'dynamic' ? 0 : 1
+            ]);
+        }
+
+        if( $order->payment_status == Order::PAYMENT_PAID || $order->payment_status == Order::PAYMENT_PARTIALLY ){
+            $data[$order->payment_status == Order::PAYMENT_PAID ? 'cambio' : 'pendiente'] = abs( $order->change );
+        }
+
+        $payments = $order->payments;
+
+        foreach ( $payments as $key => $payment ) {
+            $data['pago_'.($payment['identifier'] ?? $key)] = intval($payment['value']);
+        }
+
+        $query = http_build_query($data);
+
+        $host = env('LOCALHOST_URL', 'http://localhost:8000');
+
+        return redirect($host.'/impresion/pos?'.$query);
+    }
+
+    public function imprimirPos( )
+    {
+        $data = request()->all();
+
+        $productos = [];
+
+        $productosKeys = array_filter(array_keys($data), function($key) {
+            return strpos($key, 'producto_') !== false;
+        });
+
+        foreach ($productosKeys as $key) {
+            $producto = explode(',', $data[$key]);
+            $productos[] = [
+                'nombre' => $producto[0],
+                'cantidad' => $producto[1],
+                'total' => $producto[2],
+                'es_dinamico' => (bool) $producto[3],
+            ];
+        }
+
         $paymentTypes = $this->mapPaymentTypes();
+
+        $pagos = [];
+        
+        $pagosKeys = array_filter(array_keys($data), function($key) {
+            return strpos($key, 'pago_') !== false;
+        });
+
+        foreach ($pagosKeys as $key) {
+            $tipo_pago = str_replace('pago_', '', $key);
+
+            $pagos[] = [
+                'tipo' => $paymentTypes[$tipo_pago] ?? 'Pago',
+                'valor' => $data[$key],
+            ];
+        }
 
         $nombreImpresora = "POS-58";
         $connector = new WindowsPrintConnector($nombreImpresora);
@@ -309,24 +381,24 @@ class OrdersController extends DashboardController
         
         $impresora->feed(1);
         
-        $impresora->text("Mesa: ".$order->title."\n");
-        $impresora->text("Id: #".$order->id."\n");
-        $impresora->text("Fecha: ".date('d/m/Y H:i:s')."\n");
-        $impresora->text("Mesero: ".$order->customer?->first_name."\n");
+        $impresora->text("Mesa: ".$data['mesa']."\n");
+        $impresora->text("Id: #".$data['id']."\n");
+        $impresora->text("Fecha: ".$data['fecha']."\n");
+        $impresora->text("Mesero: ".$data['mesero']."\n");
 
         $impresora->text("------------------------------------------\n");
         $impresora->text("PRODUCTO x CANTIDAD                  TOTAL\n");
         $impresora->text("------------------------------------------\n");
 
-        $order->combinedProducts->each(function($product) use (&$impresora) {
+        foreach ($productos as $product) {
             (new OrderItemPrint(
-                $product->name,
-                $product->product_type == 'dynamic' ? $product->rate : $product->quantity,
-                $product->total_price,
+                $product['nombre'],
+                $product['cantidad'],
+                $product['total'],
                 $impresora,
-                $product->product_type == 'dynamic' ? false : true
+                !$product['es_dinamico']
             ))->print();
-        });
+        }
 
         $impresora->text("------------------------------------------\n");
 
@@ -335,11 +407,12 @@ class OrdersController extends DashboardController
         (new OrderItemPrint(
             'SUBTOTAL',
             -1,
-            $order->total,
+            $data['subtotal'],
             $impresora
         ))->print(21);
 
-        if( $order->payment_status == Order::PAYMENT_PAID || $order->payment_status == Order::PAYMENT_PARTIALLY ){
+
+        if( isset($data['cambio']) || isset($data['pendiente']) ){
             $impresora->setTextSize(1, 1);
 
             $impresora->text("------------------------------------------\n");
@@ -347,28 +420,26 @@ class OrdersController extends DashboardController
             $impresora->setTextSize(2, 1);
 
             (new OrderItemPrint(
-                $order->payment_status == Order::PAYMENT_PAID ? 'CAMBIO' : 'PENDIENTE',
+                isset($data['cambio']) ? 'CAMBIO' : 'PENDIENTE',
                 -1,
-                abs( $order->change ),
+                abs( isset($data['cambio']) ? $data['cambio'] : $data['pendiente'] ),
                 $impresora
             ))->print(21);
         }
 
         $impresora->setTextSize(1, 1);
 
-        $payments = $order->payments;
-
-        if($payments->count() > 0){
+        if(count($pagos) > 0){
             $impresora->text("------------------------------------------\n");
             $impresora->text("TIPO DE PAGO                         VALOR\n");
             $impresora->text("------------------------------------------\n");
         }
 
-        foreach ( $payments as $payment ) {
+        foreach ( $pagos as $payment ) {
             (new OrderItemPrint(
-                $paymentTypes[ $payment[ 'identifier' ] ] ?? __( 'Pago' ),
+                $payment['tipo'],
                 -1,
-                $payment[ 'value' ],
+                $payment['valor'],
                 $impresora
             ))->print();
         }
@@ -379,6 +450,104 @@ class OrdersController extends DashboardController
 
         return "<script>window.close();</script>";
     }
+
+    // public function orderPos( $order )
+    // {
+    //     return response()->json( [ 'status' => 'success' ] );
+
+    //     $order = $this->ordersService->getOrder( $order );
+
+    //     $paymentTypes = $this->mapPaymentTypes();
+
+    //     $nombreImpresora = "POS-58";
+    //     $connector = new WindowsPrintConnector($nombreImpresora);
+    //     $impresora = new Printer($connector);
+
+    //     $impresora->setJustification(Printer::JUSTIFY_LEFT);
+    //     $impresora->setFont(Printer::FONT_B);
+    //     $impresora->setTextSize(2, 1);
+
+    //     $impresora->text("JC Licores\n");
+
+    //     $impresora->setTextSize(1, 1);
+    //     $impresora->text("Andres Riascos                            \n");
+    //     $impresora->text("Nit. 1084450150                           \n");
+    //     $impresora->text("Calle 18 # 2 - 50                         \n");
+    //     $impresora->text("Telefono +57 3157594115                   \n");
+    //     $impresora->text("Regimen común                             \n");
+        
+    //     $impresora->feed(1);
+        
+    //     $impresora->text("Mesa: ".$order->title."\n");
+    //     $impresora->text("Id: #".$order->id."\n");
+    //     $impresora->text("Fecha: ".date('d/m/Y H:i:s')."\n");
+    //     $impresora->text("Mesero: ".$order->customer?->first_name."\n");
+
+    //     $impresora->text("------------------------------------------\n");
+    //     $impresora->text("PRODUCTO x CANTIDAD                  TOTAL\n");
+    //     $impresora->text("------------------------------------------\n");
+
+    //     $order->combinedProducts->each(function($product) use (&$impresora) {
+    //         (new OrderItemPrint(
+    //             $product->name,
+    //             $product->product_type == 'dynamic' ? $product->rate : $product->quantity,
+    //             $product->total_price,
+    //             $impresora,
+    //             $product->product_type == 'dynamic' ? false : true
+    //         ))->print();
+    //     });
+
+    //     $impresora->text("------------------------------------------\n");
+
+    //     $impresora->setTextSize(2, 1);
+
+    //     (new OrderItemPrint(
+    //         'SUBTOTAL',
+    //         -1,
+    //         $order->total,
+    //         $impresora
+    //     ))->print(21);
+
+    //     if( $order->payment_status == Order::PAYMENT_PAID || $order->payment_status == Order::PAYMENT_PARTIALLY ){
+    //         $impresora->setTextSize(1, 1);
+
+    //         $impresora->text("------------------------------------------\n");
+
+    //         $impresora->setTextSize(2, 1);
+
+    //         (new OrderItemPrint(
+    //             $order->payment_status == Order::PAYMENT_PAID ? 'CAMBIO' : 'PENDIENTE',
+    //             -1,
+    //             abs( $order->change ),
+    //             $impresora
+    //         ))->print(21);
+    //     }
+
+    //     $impresora->setTextSize(1, 1);
+
+    //     $payments = $order->payments;
+
+    //     if($payments->count() > 0){
+    //         $impresora->text("------------------------------------------\n");
+    //         $impresora->text("TIPO DE PAGO                         VALOR\n");
+    //         $impresora->text("------------------------------------------\n");
+    //     }
+
+    //     foreach ( $payments as $payment ) {
+    //         (new OrderItemPrint(
+    //             $paymentTypes[ $payment[ 'identifier' ] ] ?? __( 'Pago' ),
+    //             -1,
+    //             $payment[ 'value' ],
+    //             $impresora
+    //         ))->print();
+    //     }
+
+    //     $impresora->feed(3);
+
+    //     $impresora->close();
+
+    //     return "<script>window.close();</script>";
+    // }
 
     public function voidOrder( Order $order, Request $request )
     {
